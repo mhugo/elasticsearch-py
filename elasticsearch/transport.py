@@ -385,7 +385,9 @@ class Transport(object):
                 elif isinstance(e, ConnectionError):
                     retry = True
                 elif e.status_code in self.retry_on_status:
-                    retry = True
+                    # ODS patch: do not retry on too_many_buckets_exception
+                    retry = e.info.get("error", {}).get("caused_by", {}).get("type") \
+                        != "too_many_buckets_exception"
 
                 if retry:
                     # only mark as dead if we are retrying
